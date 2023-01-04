@@ -28,12 +28,6 @@ match_fit <-
   match_workflow %>% 
   fit(data = df_train)
 
-coefs<-match_fit %>% 
-  extract_fit_parsnip() %>% 
-  tidy()%>%
-  arrange(p.value)
-
-
 results_augmented <- augment(match_fit, df_test)
 
 results_augmented%>%
