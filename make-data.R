@@ -1,18 +1,13 @@
-library(tidymodels)
-library(tidyverse)
-library(data.table)
-library(rjson)
-library(zoo)
-library(lubridate)
-
 rm(list=ls())
 all_files<-paste('raw-data/',list.files(path = 'raw-data/'),sep="")
-usefull_files <- all_files[str_detect(all_files,"^\\d|.json$")] %>% head(1000)
+usefull_files <- all_files[str_detect(all_files,"^\\d|.json$")][7001:10000]
 
 
 raw_match_data <- lapply(usefull_files,function(x) fromJSON(file = x))
 match_id<-str_remove_all(usefull_files,"raw-data/|.json")
 names(raw_match_data)<-match_id
+
+
 
 
 # Part 1: Get match info
@@ -23,7 +18,7 @@ match_level_info<-data.table(raw_info)%>%
   unnest_wider(raw_info)%>%
   unnest_wider(event)%>%
   unnest_wider(officials)%>%
-  select(-umpires,-players,-toss,-registry)%>%
+  select(-umpires,-players,-toss,-registry,-bowl_out)%>%
   unnest_wider(outcome)%>%
   unnest_wider(by)%>%
   mutate(date_start=sapply(dates,min),
@@ -164,4 +159,7 @@ all_matches<-match_level_info%>%
   inner_join(away_team_summary_stats,by="match_id")
 
 rm(list=setdiff(ls(), "all_matches"))
-   
+
+saveRDS(all_matches, file = "all_matches_7_to_10.rds")
+
+print("data ready!")

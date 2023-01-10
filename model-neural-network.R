@@ -1,45 +1,25 @@
-source('make-train-test.R')
 
 # Define recipe
 match_pred <- 
   recipe(home_wins~.,data = df_train)%>%
-  update_role(match_id,new_role='id')%>%
   step_dummy(all_nominal_predictors())%>%
   step_zv(all_predictors())
 
-summary(match_pred)
-
 # Define model
-neuralnet_mod<-
-  mlp(
-    hidden_units = integer(1),
-    penalty = double(1),
-    dropout = double(1),
-    epochs = integer(1),
-    activation = character(1)
-  ) %>% 
-  set_engine("keras") %>% 
+nnet_spec <- 
+  mlp(penalty = 0, epochs = 100) %>% 
+  # This model can be used for classification or regression, so set mode
   set_mode("classification") %>% 
-  translate()
+  set_engine("nnet")
 
-# Fit model with recipe
-match_workflow <-
-  workflow()%>%
-  add_model(neuralnet_mod)%>%
-  add_recipe(match_pred)
+  # Fit model with recipe
+nnet_fit <- nnet_spec %>% fit(home_wins ~., data=df_train)
 
-match_workflow
+augmented <- augment(nnet_fit,df_test)
 
-match_fit <- 
-  match_workflow %>% 
-  fit(data = df_train)
+augmented%>%
+  accuracy(home_wins,.pred_class.pred_{something})  # To get probaility
 
 
-results_augmented <- augment(match_fit, df_test)
-
-results_augmented%>%
-  select(home_wins,match_id,.pred_class)
-
-
-results_augmented%>%
-  accuracy(home_wins,.pred_class)
+augmented%>%
+  conf_mat(home_wins,.pred_class)  

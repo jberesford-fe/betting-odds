@@ -1,9 +1,7 @@
-source('make-train-test.R')
-
 # Define recipe
 match_pred <- 
   recipe(home_wins~.,data = df_train)%>%
-  update_role(match_id,new_role='id')%>%
+  #update_role(match_id,new_role='id')%>%
   step_dummy(all_nominal_predictors())%>%
   step_zv(all_predictors())
 
@@ -36,3 +34,4 @@ results_augmented%>%
 
 results_augmented%>%
   accuracy(home_wins,.pred_class)
+
